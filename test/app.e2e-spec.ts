@@ -93,7 +93,50 @@ describe('App e2e', () => {
           .post('/auth/signin')
           .withBody(dto)
           .expectStatus(200)
-          .stores('userAccessToken', 'access_token');
+          .stores('userAccessToken', 'access_token')
+          .stores('userRefreshToken', 'refresh_token');
+      });
+
+      it('should not allow to logout', () => {
+        return pactum
+          .spec()
+          .post('/auth/logout')
+          .withBody(dto)
+          .expectStatus(401);
+      });
+
+      it('should logout', () => {
+        return pactum
+          .spec()
+          .post('/auth/logout')
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
+          .expectStatus(200);
+      });
+
+      it('should not allow to refresh token', () => {
+        return pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders({ Authorization: 'Bearer $S{userRefreshToken}' })
+          .expectStatus(403);
+      });
+
+      it('should signin', () => {
+        return pactum
+          .spec()
+          .post('/auth/signin')
+          .withBody(dto)
+          .expectStatus(200)
+          .stores('userAccessToken', 'access_token')
+          .stores('userRefreshToken', 'refresh_token');
+      });
+
+      it('should allow to refresh token', () => {
+        return pactum
+          .spec()
+          .post('/auth/refresh')
+          .withHeaders({ Authorization: 'Bearer $S{userRefreshToken}' })
+          .expectStatus(200);
       });
     });
   });
