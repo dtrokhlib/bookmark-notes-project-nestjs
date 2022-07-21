@@ -1,4 +1,4 @@
-import { Body, INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { AppModule } from '../src/app.module';
@@ -7,6 +7,8 @@ import { AuthDto } from '../src/auth/dto/auth.dto';
 import { EditUserDto } from '../src/user/dto/edit-user.dto';
 import { CreateBookmarkDto } from '../src/bookmark/dto/create-bookmark.dto';
 import { UpdateBookmarkDto } from '../src/bookmark/dto/update-bookmark.dto';
+import { CreateNoteDto } from '../src/note/dto/create-note.dto';
+import { UpdateNoteDto } from 'src/note/dto/update-note.dto';
 
 const PORT = 5000;
 
@@ -91,7 +93,7 @@ describe('App e2e', () => {
           .post('/auth/signin')
           .withBody(dto)
           .expectStatus(200)
-          .stores('userAt', 'access_token');
+          .stores('userAccessToken', 'access_token');
       });
     });
   });
@@ -102,7 +104,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .get('/users/me')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .expectStatus(200);
       });
     });
@@ -117,7 +119,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .patch('/users')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .withBody(dto)
           .expectStatus(200)
           .expectBodyContains(dto.firstName)
@@ -133,7 +135,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .get('/bookmarks')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .expectStatus(200)
           .expectBody([]);
       });
@@ -149,7 +151,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .post('/bookmarks')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .withBody(dto)
           .expectStatus(201)
           .expectBodyContains(dto.title)
@@ -163,7 +165,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .get('/bookmarks')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .expectStatus(200)
           .expectJsonLength(1);
       });
@@ -174,7 +176,7 @@ describe('App e2e', () => {
           .spec()
           .get('/bookmarks/{id}')
           .withPathParams('id', '$S{bookmarkId}')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .expectStatus(200)
           .expectBodyContains('$S{bookmarkId}');
       });
@@ -190,7 +192,7 @@ describe('App e2e', () => {
           .spec()
           .patch('/bookmarks/{id}')
           .withPathParams('id', '$S{bookmarkId}')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .withBody(dto)
           .expectStatus(200)
           .expectBodyContains(dto.title)
@@ -205,7 +207,7 @@ describe('App e2e', () => {
           .spec()
           .delete('/bookmarks/{id}')
           .withPathParams('id', '$S{bookmarkId}')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .expectStatus(204);
       });
 
@@ -213,7 +215,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .get('/bookmarks')
-          .withHeaders({ Authorization: 'Bearer $S{userAt}' })
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
           .expectStatus(200)
           .expectJsonLength(0);
       });
@@ -221,10 +223,100 @@ describe('App e2e', () => {
   });
 
   describe('Notes', () => {
-    describe('Create note', () => {});
-    describe('Get notes', () => {});
-    describe('Bet note by id', () => {});
-    describe('Edit note', () => {});
-    describe('Delete note', () => {});
+    describe('Get empty notes', () => {
+      it('should return empty notes', () => {
+        return pactum
+          .spec()
+          .get('/notes')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAccessToken}',
+          })
+          .expectStatus(200)
+          .expectBody([]);
+      });
+    });
+    describe('Create note', () => {
+      const dto: CreateNoteDto = {
+        title: 'My test note',
+        description: 'My test note description',
+        relatedDate: '2022-07-20T19:28:44+00:00',
+      };
+
+      it('should create  note', () => {
+        return pactum
+          .spec()
+          .post('/notes')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAccessToken}',
+          })
+          .withBody(dto)
+          .expectStatus(201)
+          .expectBodyContains(dto.title)
+          .expectBodyContains(dto.description)
+          .expectBodyContains(dto.relatedDate)
+          .stores('noteId', 'id');
+      });
+    });
+    describe('Get notes', () => {
+      it('should return notes', () => {
+        return pactum
+          .spec()
+          .get('/notes')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAccessToken}',
+          })
+          .expectStatus(200)
+          .expectJsonLength(1);
+      });
+    });
+    describe('Get note by id', () => {
+      it('should return note by id', () => {
+        return pactum
+          .spec()
+          .get('/notes/{id}')
+          .withPathParams('id', '$S{noteId}')
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
+          .expectStatus(200);
+      });
+    });
+    describe('Edit note by id', () => {
+      const dto: UpdateNoteDto = {
+        title: 'My test note 2',
+        description: 'My test note description 2',
+        relatedDate: '2022-08-20T19:28:44+00:00',
+      };
+      it('should return edit note by id', () => {
+        return pactum
+          .spec()
+          .patch('/notes/{id}')
+          .withPathParams('id', '$S{noteId}')
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains(dto.title)
+          .expectBodyContains(dto.description)
+          .expectBodyContains(dto.relatedDate);
+      });
+    });
+    describe('Delete note by id', () => {
+      it('should return edit note by id', () => {
+        return pactum
+          .spec()
+          .delete('/notes/{id}')
+          .withPathParams('id', '$S{noteId}')
+          .withHeaders({ Authorization: 'Bearer $S{userAccessToken}' })
+          .expectStatus(204);
+      });
+      it('should return empty notes', () => {
+        return pactum
+          .spec()
+          .get('/notes')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAccessToken}',
+          })
+          .expectStatus(200)
+          .expectBody([]);
+      });
+    });
   });
 });

@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "prisma:test:deploy": "dotenv -e .env.test -- npx prisma migrate deploy",
+    "prisma:test:deploy": "dotenv -e .env.test -- npx prisma migrate dev",
     "db:test:rm": "docker compose rm test-db -s -f -v",
     "db:test:up": "docker compose up test-db -d",
     "db:test:restart": "npm run db:test:rm && npm run db:test:up && npm run && sleep 2 &&npm run prisma:test:deploy",

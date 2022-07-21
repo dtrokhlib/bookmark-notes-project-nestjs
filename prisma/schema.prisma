@@ -43,8 +43,9 @@ model Note {
     updatedAt   DateTime @updatedAt
     title       String
     description String?
+    relatedDate String?
     userId      Int
-    user        User    @relation(fields: [userId], references: [id])
+    user        User     @relation(fields: [userId], references: [id])
 
     @@map(name: "notes")
 }
