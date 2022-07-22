@@ -9,15 +9,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
-import { GetUser } from '../auth/decorator/get-user.decorator';
-import { JwtGuard } from '../auth/guard/jwt.guard';
-import { CreateNoteDto } from './dto/create-note.dto';
-import { UpdateNoteDto } from './dto/update-note.dto';
+import { GetUser } from '../common/decorators';
+import { CreateNoteDto, UpdateNoteDto } from './dto';
 import { NoteService } from './note.service';
 
-@UseGuards(JwtGuard)
 @Controller('notes')
 export class NoteController {
   constructor(private noteService: NoteService) {}

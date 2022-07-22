@@ -3,12 +3,10 @@ import { Test } from '@nestjs/testing';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { AppModule } from '../src/app.module';
 import * as pactum from 'pactum';
-import { AuthDto } from '../src/auth/dto/auth.dto';
-import { EditUserDto } from '../src/user/dto/edit-user.dto';
-import { CreateBookmarkDto } from '../src/bookmark/dto/create-bookmark.dto';
-import { UpdateBookmarkDto } from '../src/bookmark/dto/update-bookmark.dto';
-import { CreateNoteDto } from '../src/note/dto/create-note.dto';
-import { UpdateNoteDto } from 'src/note/dto/update-note.dto';
+import { AuthDto } from '../src/auth/dto';
+import { EditUserDto } from '../src/user/dto';
+import { CreateBookmarkDto, UpdateBookmarkDto } from '../src/bookmark/dto';
+import { CreateNoteDto, UpdateNoteDto } from '../src/note/dto';
 
 const PORT = 5000;
 

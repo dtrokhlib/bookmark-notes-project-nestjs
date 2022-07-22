@@ -9,16 +9,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
-import { use } from 'passport';
-import { GetUser } from '../auth/decorator/get-user.decorator';
-import { JwtGuard } from '../auth/guard/jwt.guard';
+import { GetUser } from '../common/decorators';
 import { BookmarkService } from './bookmark.service';
-import { CreateBookmarkDto } from './dto/create-bookmark.dto';
-import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
+import { CreateBookmarkDto, UpdateBookmarkDto } from './dto';
 
-@UseGuards(JwtGuard)
 @Controller('bookmarks')
 export class BookmarkController {
   constructor(private bookmarkService: BookmarkService) {}

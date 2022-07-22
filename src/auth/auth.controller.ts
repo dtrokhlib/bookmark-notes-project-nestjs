@@ -6,36 +6,36 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
 import { AuthService } from './auth.service';
-import { GetUser } from './decorator/get-user.decorator';
-import { AuthDto } from './dto/auth.dto';
-import { JwtRefreshGuard } from './guard/jwt-refresh.guard';
-import { JwtGuard } from './guard/jwt.guard';
-import { Tokens } from './types/tokens.type';
+import { GetUser, Public } from '../common/decorators';
+import { AuthDto } from './dto';
+import { JwtRefreshGuard } from '../common/guards';
+import { Tokens } from './types';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @Post('signup')
   signup(@Body() dto: AuthDto): Promise<Tokens> {
     return this.authService.signup(dto);
   }
 
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   signin(@Body() dto: AuthDto): Promise<Tokens> {
     return this.authService.signin(dto);
   }
 
-  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   logout(@GetUser('id') userId: number) {
     return this.authService.logout(userId);
   }
 
+  @Public()
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
