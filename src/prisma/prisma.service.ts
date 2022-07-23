@@ -27,6 +27,7 @@ export class PrismaService
 
   // Only for test db
   cleanDb() {
+    if (process.env.NODE_ENV === 'production') return;
     return this.$transaction([
       this.note.deleteMany(),
       this.bookmark.deleteMany(),
