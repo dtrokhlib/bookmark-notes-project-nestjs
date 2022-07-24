@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GetUser, Public } from '../common/decorators';
-import { AuthDto } from './dto';
+import { AuthDto, TokensResponseDto } from './dto';
 import { JwtRefreshGuard } from '../common/guards';
 import { Tokens } from './types';
 import {
@@ -26,7 +26,7 @@ import {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiCreatedResponse()
+  @ApiCreatedResponse({ type: TokensResponseDto })
   @ApiConflictResponse({ description: 'Email is alredy in use' })
   @ApiBody({ type: [AuthDto] })
   @Public()
@@ -35,7 +35,7 @@ export class AuthController {
     return this.authService.signup(dto);
   }
 
-  @ApiOkResponse()
+  @ApiOkResponse({ type: TokensResponseDto })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   @ApiBody({ type: [AuthDto] })
   @Public()
@@ -53,7 +53,7 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  @ApiOkResponse()
+  @ApiOkResponse({ type: TokensResponseDto })
   @ApiResponse({ status: 409, description: 'Access denied' })
   @Public()
   @UseGuards(JwtRefreshGuard)
