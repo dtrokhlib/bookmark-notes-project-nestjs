@@ -11,3 +11,5 @@ export const updateNoteDto: UpdateNoteDto = {
   description: 'My test note description 2',
   relatedDate: '2022-08-20T19:28:44+00:00',
 };
+
+export const INVALID_ID: number = -1;

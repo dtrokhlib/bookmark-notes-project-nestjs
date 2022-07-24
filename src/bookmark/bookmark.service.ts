@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookmarkDto, UpdateBookmarkDto } from './dto';
 
@@ -24,12 +29,21 @@ export class BookmarkService {
   }
 
   async createBookmark(userId: number, dto: CreateBookmarkDto) {
-    return await this.prismaService.bookmark.create({
-      data: {
-        userId,
-        ...dto,
-      },
-    });
+    try {
+      return await this.prismaService.bookmark.create({
+        data: {
+          userId,
+          ...dto,
+        },
+      });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new BadRequestException('Invalid user id');
+        }
+      }
+      throw error;
+    }
   }
 
   async editBookmarkById(

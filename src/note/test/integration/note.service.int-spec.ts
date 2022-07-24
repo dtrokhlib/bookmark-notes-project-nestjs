@@ -3,7 +3,12 @@ import { AppModule } from 'src/app.module';
 import { CreateNoteDto, UpdateNoteDto } from 'src/note/dto';
 import { NoteService } from 'src/note/note.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { createNoteDto, updateNoteDto, userDto } from './note.test.data';
+import {
+  createNoteDto,
+  INVALID_ID,
+  updateNoteDto,
+  userDto,
+} from './note.test.data';
 
 describe('NoteService Int', () => {
   let prismaService: PrismaService;
@@ -11,7 +16,6 @@ describe('NoteService Int', () => {
 
   let userId: number;
   let noteId: number;
-  const INVALID_ID: number = -1;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -28,14 +32,19 @@ describe('NoteService Int', () => {
     prismaService.onModuleDestroy();
   });
 
-  describe('create Note', () => {
+  describe('create note', () => {
     it('should create user', async () => {
       const user = await prismaService.user.create({
         data: userDto,
       });
       userId = user.id;
     });
-    it('should create NOTE', async () => {
+    it('should fail to create note', async () => {
+      await noteService.createNote(INVALID_ID, createNoteDto).catch((err) => {
+        expect(err.status).toBe(400);
+      });
+    });
+    it('should create note', async () => {
       const createdNote = await noteService.createNote(userId, createNoteDto);
       expect(createdNote.title).toBe(createNoteDto.title);
       expect(createdNote.description).toBe(createNoteDto.description);
@@ -44,8 +53,8 @@ describe('NoteService Int', () => {
     });
   });
 
-  describe('should update NOTE', () => {
-    it('should update NOTE', async () => {
+  describe('should update note', () => {
+    it('should update note', async () => {
       const updatedTodo = await noteService.updateNoteById(
         userId,
         noteId,
@@ -56,13 +65,13 @@ describe('NoteService Int', () => {
       expect(updatedTodo.relatedDate).toBe(updateNoteDto.relatedDate);
     });
 
-    it('should fail to update NOTE (Invalid user ID)', async () => {
+    it('should fail to update note (Invalid user id)', async () => {
       await noteService
         .updateNoteById(INVALID_ID, noteId, updateNoteDto)
         .then((note) => expect(note).toBeUndefined)
         .catch((error) => expect(error.status).toBe(403));
     });
-    it('should fail to update NOTE (Invalid NOTE id)', async () => {
+    it('should fail to update note (Invalid note id)', async () => {
       await noteService
         .updateNoteById(userId, INVALID_ID, updateNoteDto)
         .then((note) => expect(note).toBeUndefined)
@@ -70,39 +79,39 @@ describe('NoteService Int', () => {
     });
   });
 
-  describe('should delete NOTE', () => {
-    it('should fail to delete NOTE (Invalid User Id)', async () => {
+  describe('should delete note', () => {
+    it('should fail to delete note (Invalid user id)', async () => {
       await noteService
         .deleteNoteById(INVALID_ID, noteId)
         .then((note) => expect(note).toBeUndefined)
         .catch((error) => expect(error.status).toBe(403));
     });
-    it('should fail to delete NOTE (Invalid NOTE Id)', async () => {
+    it('should fail to delete note (Invalid note id)', async () => {
       await noteService
         .deleteNoteById(userId, INVALID_ID)
         .then((note) => expect(note).toBeUndefined)
         .catch((error) => expect(error.status).toBe(403));
     });
-    it('should return NOTE', async () => {
+    it('should return note', async () => {
       await noteService.getNotesById(userId, noteId).then((note) => {
         expect(note).toBeDefined();
         expect(note.id).toBe(noteId);
         expect(note.userId).toBe(userId);
       });
     });
-    it('should delete NOTE', async () => {
+    it('should delete note', async () => {
       const note = await noteService.deleteNoteById(userId, noteId);
       expect(note).toBeUndefined();
     });
-    it('should not return deleted NOTE', async () => {
+    it('should not return deleted note', async () => {
       await noteService
         .getNotesById(userId, noteId)
         .then((note) => expect(note).toBeNull());
     });
   });
 
-  describe('should retrieve NOTES', () => {
-    it('should create 2 NOTEs', async () => {
+  describe('should retrieve notes', () => {
+    it('should create 2 notes', async () => {
       await noteService.createNote(userId, createNoteDto);
       await noteService.createNote(userId, createNoteDto);
     });
@@ -116,27 +125,25 @@ describe('NoteService Int', () => {
     });
   });
 
-  describe('should retrieve NOTES by ID', () => {
-    it('should create NOTE', async () => {
+  describe('should retrieve note by id', () => {
+    it('should create note', async () => {
       const note = await noteService.createNote(userId, createNoteDto);
       noteId = note.id;
     });
-    it('should retrieve NOTE by Id', async () => {
+    it('should retrieve note by id', async () => {
       const note = await noteService.getNotesById(userId, noteId);
       expect(note.userId).toBe(userId);
       expect(note.id).toBe(noteId);
     });
-    it('should fail to retrieve NOTE by Id (invalid user Id)', async () => {
+    it('should fail to retrieve note by id (Invalid user id)', async () => {
       await noteService
         .getNotesById(INVALID_ID, noteId)
-        .then((note) => expect(note).toBeUndefined)
-        .catch((error) => expect(error.status).toBe(403));
+        .then((note) => expect(note).toBeNull());
     });
-    it('should fail to retrieve NOTE by Id (invalid NOTE Id)', async () => {
+    it('should fail to retrieve note by id (Invalid note id)', async () => {
       await noteService
         .getNotesById(userId, INVALID_ID)
-        .then((note) => expect(note).toBeUndefined)
-        .catch((error) => expect(error.status).toBe(403));
+        .then((note) => expect(note).toBeNull());
     });
   });
 });

@@ -29,7 +29,7 @@
     "pretest:e2e": "npm run db:test:restart",
     "test:e2e": "dotenv -e .env.test -- jest --watch --no-cache --config ./test/jest-e2e.json",
     "pretest:int": "npm run db:test:restart",
-    "test:int": "dotenv -e .env.test -- jest -i --no-cache --watch --silent=false --config ./jest-int.json"
+    "test:int": "dotenv -e .env.test -- jest -i --no-cache --watch-all --silent=false --config ./jest-int.json"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",

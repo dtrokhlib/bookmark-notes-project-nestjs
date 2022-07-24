@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateNoteDto, UpdateNoteDto } from './dto';
 
@@ -24,12 +25,21 @@ export class NoteService {
   }
 
   async createNote(userId: number, dto: CreateNoteDto) {
-    return await this.prismaService.note.create({
-      data: {
-        userId,
-        ...dto,
-      },
-    });
+    try {
+      return await this.prismaService.note.create({
+        data: {
+          userId,
+          ...dto,
+        },
+      });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new BadRequestException('Invalid user id');
+        }
+      }
+      throw error;
+    }
   }
 
   async updateNoteById(userId: number, noteId: number, dto: UpdateNoteDto) {
