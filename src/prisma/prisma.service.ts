@@ -1,6 +1,15 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
+import {
+  PrismaClientInitializationError,
+  PrismaClientKnownRequestError,
+} from '@prisma/client/runtime';
 
 @Injectable()
 export class PrismaService
@@ -18,7 +27,19 @@ export class PrismaService
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      console.log('here');
+      await this.$connect();
+    } catch (error) {
+      if (error instanceof PrismaClientInitializationError) {
+        if (error.errorCode === 'P1001') {
+          throw new InternalServerErrorException(
+            'Server was unable to connect to db. Ensure that DB server is running or connection string is set properly.',
+          );
+        }
+      }
+      throw error;
+    }
   }
 
   async onModuleDestroy() {
